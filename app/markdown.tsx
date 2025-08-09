@@ -1,5 +1,6 @@
 import { memo } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Highlight, PrismTheme } from "prism-react-renderer";
 
 type MarkdownProps = {
@@ -8,11 +9,23 @@ type MarkdownProps = {
 
 const Markdown = ({ text }: MarkdownProps) => (
   <ReactMarkdown
+    remarkPlugins={[remarkGfm]}
     components={{
-      code({ className, children, ...props }) {
+      code({
+        className,
+        children,
+        ...props
+      }: {
+        className?: string;
+        children?: React.ReactNode;
+      } & React.HTMLAttributes<HTMLElement>) {
         const match = /language-(\w+)/.exec(className || "");
         return match ? (
-          <Highlight theme={oneDarkTheme} code={String(children).replace(/\n$/, "")} language={match[1]}>
+          <Highlight
+            theme={oneDarkTheme}
+            code={String(children).replace(/\n$/, "")}
+            language={match[1]}
+          >
             {({ tokens, getLineProps, getTokenProps }) => (
               <>
                 {tokens.map((line, i) => (
@@ -42,7 +55,10 @@ export default memo(Markdown);
 const oneDarkTheme: PrismTheme = {
   plain: { color: "#abb2bf" },
   styles: [
-    { types: ["comment", "prolog"], style: { color: "#5c6370", fontStyle: "italic" } },
+    {
+      types: ["comment", "prolog"],
+      style: { color: "#5c6370", fontStyle: "italic" },
+    },
     { types: ["punctuation", "operator"], style: { color: "#56b6c2" } },
     { types: ["variable"], style: { color: "#e06c75" } },
     { types: ["property", "constant"], style: { color: "#ef596f" } },

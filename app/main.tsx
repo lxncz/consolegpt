@@ -24,7 +24,8 @@ const Main = () => {
           initialContent={[
             {
               role: "developer",
-              content: "Format rules: Use ```lang notation if you need to display code",
+              content:
+                "Format rules: Use ```lang notation if you need to display code",
             },
           ]}
           containerRef={mainViewRef}

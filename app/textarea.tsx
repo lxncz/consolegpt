@@ -2,7 +2,13 @@ import { ChangeEvent, useState, useEffect, useRef, memo } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 
 type ChatInputProps = {
-  onSubmit: ({ content, action }: { content: string; action: "send" | "save" }) => void;
+  onSubmit: ({
+    content,
+    action,
+  }: {
+    content: string;
+    action: "send" | "save";
+  }) => void;
   defaultValue?: string;
 };
 
@@ -37,12 +43,18 @@ const Textarea = ({ onSubmit, defaultValue = "" }: ChatInputProps) => {
   };
 
   useEffect(() => {
-    if (content === "" && !["TEXT", "TEXTAREA"].includes(document.activeElement?.nodeName || "")) {
+    if (
+      content === "" &&
+      !["TEXT", "TEXTAREA"].includes(document.activeElement?.nodeName || "")
+    ) {
       ref.current?.focus();
     }
   }, [content]);
 
-  const textColor = defaultValue.length > 0 && content !== defaultValue ? "text-[#ffd985]" : "text-[#fff]";
+  const textColor =
+    defaultValue.length > 0 && content !== defaultValue
+      ? "text-[#ffd985]"
+      : "text-[#fff]";
 
   return (
     <>

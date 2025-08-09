@@ -3,7 +3,10 @@ import { createAtom } from "./utils";
 import OpenAI from "openai";
 
 type ChatCompletionOptions = {
-  messages?: Array<{ role: "user" | "assistant" | "developer"; content: string }>;
+  messages?: Array<{
+    role: "user" | "assistant" | "developer";
+    content: string;
+  }>;
   model?: string;
 };
 
@@ -14,7 +17,12 @@ type ChatCompletion = (props: {
   onText: (text: string) => void;
 }) => Promise<string>;
 
-const chatCompletion: ChatCompletion = async ({ opts, apiKey, onText, signal }) => {
+const chatCompletion: ChatCompletion = async ({
+  opts,
+  apiKey,
+  onText,
+  signal,
+}) => {
   return new Promise((resolve, reject) => {
     if (!apiKey) {
       return reject(new Error("API key is required"));
@@ -65,8 +73,10 @@ const createCompletionTaskStore = () => {
 
   const atom = createAtom<CompletionTask[]>([]);
 
-  const storeTask = (task: CompletionTask) => atom.set((prev) => [...prev, task]);
-  const removeTask = (id: string) => atom.set((prev) => [...prev].filter((task) => task.id !== id));
+  const storeTask = (task: CompletionTask) =>
+    atom.set((prev) => [...prev, task]);
+  const removeTask = (id: string) =>
+    atom.set((prev) => [...prev].filter((task) => task.id !== id));
 
   type newTaskProps = {
     id: string;
@@ -77,7 +87,14 @@ const createCompletionTaskStore = () => {
     onError?: (error: unknown) => void;
   };
 
-  const newTask = ({ id, apiKey, opts, onText, onDone, onError }: newTaskProps) => {
+  const newTask = ({
+    id,
+    apiKey,
+    opts,
+    onText,
+    onDone,
+    onError,
+  }: newTaskProps) => {
     const result = createAtom("");
 
     const abortController = new AbortController();

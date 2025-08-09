@@ -30,19 +30,25 @@ const Header = ({ onNewChatRequest }: HeaderProps) => {
   };
 
   const handleNewChatRequest = () => {
-    console.log(onNewChatRequest)
+    console.log(onNewChatRequest);
     onNewChatRequest?.();
   };
 
   return (
     <header
       style={{
-        background: "linear-gradient(90deg, rgb(255 255 255 / 10%), rgb(255 255 255 / 5%))",
+        background:
+          "linear-gradient(90deg, rgb(255 255 255 / 10%), rgb(255 255 255 / 5%))",
         backdropFilter: "blur(10px)",
       }}
       className="flex p-2 w-full sticky top-0 gap-2 text-sm bg-neutral-900 rounded-b-lg"
     >
-      <button className="font-bold text-white hover:text-neutral-300 px-2" onClick={handleNewChatRequest}>New Chat</button>
+      <button
+        className="font-bold text-white hover:text-neutral-300 px-2"
+        onClick={handleNewChatRequest}
+      >
+        New Chat
+      </button>
 
       <label className="text-white h-fit">
         <span className="text-zinc-500">API Key </span>

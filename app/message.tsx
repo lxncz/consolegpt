@@ -1,4 +1,13 @@
-import { RefObject, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  RefObject,
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { nanoid } from "nanoid";
 
 import Markdown from "./markdown";
@@ -21,7 +30,10 @@ type MsgStore = {
 
 type MessageProps = {
   id: string;
-  initialContent: { role: "user" | "assistant" | "developer"; content: string }[];
+  initialContent: {
+    role: "user" | "assistant" | "developer";
+    content: string;
+  }[];
   containerRef: RefObject<HTMLElement | null>;
   onWeightChange?: () => void;
   deselectMsgRef?: RefObject<(() => void) | undefined>;
@@ -32,7 +44,9 @@ const newMessageCompletion = ({
   messages,
 }: {
   msgId: string;
-  messages: Parameters<typeof completionTaskStore.newTask>[0]["opts"]["messages"];
+  messages: Parameters<
+    typeof completionTaskStore.newTask
+  >[0]["opts"]["messages"];
 }) => {
   const { apiKey, model } = settingsStore.get();
 
@@ -49,15 +63,25 @@ const newMessageCompletion = ({
       model,
       messages,
     },
-    onText: (text) => msgStore.set({ ...msg, content: (msg.content || "") + text + " " }),
+    onText: (text) =>
+      msgStore.set({ ...msg, content: (msg.content || "") + text + " " }),
     onError: (error) => {
       const freshMsg = msgStore.get();
-      msgStore.set({ ...freshMsg, meta: { ...freshMsg.meta, error: JSON.stringify(error) } });
+      msgStore.set({
+        ...freshMsg,
+        meta: { ...freshMsg.meta, error: JSON.stringify(error) },
+      });
     },
   });
 };
 
-const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsgRef }: MessageProps) => {
+const Message = ({
+  id,
+  initialContent,
+  containerRef,
+  onWeightChange,
+  deselectMsgRef,
+}: MessageProps) => {
   const [parentMsg, setParentMsg] = useState(storage<MsgStore>(id).get());
 
   const childMsgs =
@@ -74,7 +98,10 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
 
   const [isEditing, setIsEditing] = useState(defaultChildRole === "user");
 
-  const refresh = useCallback(() => setParentMsg(storage<MsgStore>(id).get()), [id]);
+  const refresh = useCallback(
+    () => setParentMsg(storage<MsgStore>(id).get()),
+    [id]
+  );
 
   useLayoutEffect(() => {
     if (weight !== parentMsg.weight) {
@@ -96,11 +123,19 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
       },
       initialContent: [
         ...initialContent,
-        ...(selectedMsg.role && selectedMsg.content ? [{ role: selectedMsg.role, content: selectedMsg.content }] : []),
+        ...(selectedMsg.role && selectedMsg.content
+          ? [{ role: selectedMsg.role, content: selectedMsg.content }]
+          : []),
       ],
       onWeightChange: () => refresh(),
     };
-  }, [initialContent, selectedMsg?.id, selectedMsg?.content, selectedMsg?.role, refresh]);
+  }, [
+    initialContent,
+    selectedMsg?.id,
+    selectedMsg?.content,
+    selectedMsg?.role,
+    refresh,
+  ]);
 
   const ref = useRef<HTMLDivElement>(null);
   const prevPosRef = useRef<number | undefined>(null);
@@ -109,14 +144,21 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
   useEffect(() => {
     if (typeof prevPosRef.current !== "number") return;
     containerRef.current?.scrollTo({
-      top: containerRef.current.scrollTop + ((getCurrentPos() || 0) - prevPosRef.current),
+      top:
+        containerRef.current.scrollTop +
+        ((getCurrentPos() || 0) - prevPosRef.current),
     });
     prevPosRef.current = undefined;
   });
 
   useEffect(() => {
-    const inProgressTasks = completionTaskStore.get().filter((task) => parentMsg?.messages?.includes(task.id)) || [];
-    const unsubs = inProgressTasks.map((task) => task.result.subscribe(refresh));
+    const inProgressTasks =
+      completionTaskStore
+        .get()
+        .filter((task) => parentMsg?.messages?.includes(task.id)) || [];
+    const unsubs = inProgressTasks.map((task) =>
+      task.result.subscribe(refresh)
+    );
     return () => unsubs.forEach((unsub) => unsub());
   });
 
@@ -153,7 +195,10 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
         select: childMsgId,
       };
 
-      newMessageCompletion({ msgId: childMsgId, messages: [...initialContent, { role: msg.role, content }] });
+      newMessageCompletion({
+        msgId: childMsgId,
+        messages: [...initialContent, { role: msg.role, content }],
+      });
     }
 
     storage<MsgStore>(msgId).set(msg);
@@ -192,7 +237,10 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
     const deletedChatIndex = messages.indexOf(msgId);
 
     const newMsgs = messages.filter((_id) => _id !== msgId);
-    const newSelected = parentMsg.select === msgId ? newMsgs[deletedChatIndex] || newMsgs[0] || null : parentMsg.select;
+    const newSelected =
+      parentMsg.select === msgId
+        ? newMsgs[deletedChatIndex] || newMsgs[0] || null
+        : parentMsg.select;
 
     storage<MsgStore>(id).set({
       ...parentMsg,
@@ -262,9 +310,16 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
               const contentText = msgData.content?.slice(0, 200) || "...";
 
               return (
-                <div className={` cursor-pointer w-fit max-w-full flex bg-inherit `} key={msgData.id}>
+                <div
+                  className={` cursor-pointer w-fit max-w-full flex bg-inherit `}
+                  key={msgData.id}
+                >
                   <span
-                    className={`truncate ${bold ? `font-bold ${style.previewTextColor}` : "text-neutral-400"}`}
+                    className={`truncate ${
+                      bold
+                        ? `font-bold ${style.previewTextColor}`
+                        : "text-neutral-400"
+                    }`}
                     onClick={() => handleItemClick(msgData.id)}
                   >
                     {`${weightText}${metaText}${contentText}`}
@@ -370,10 +425,15 @@ const Message = ({ id, initialContent, containerRef, onWeightChange, deselectMsg
           </article>
         )}
 
-        {selectedMsg?.meta?.error && <span className="m-auto">{"Error: " + selectedMsg.meta.error}</span>}
+        {selectedMsg?.meta?.error && (
+          <span className="m-auto">{"Error: " + selectedMsg.meta.error}</span>
+        )}
 
         {selectedMsg?.task && (
-          <button className="m-auto font-bold" onClick={() => selectedMsg.task?.abort()}>
+          <button
+            className="m-auto font-bold"
+            onClick={() => selectedMsg.task?.abort()}
+          >
             Stop response
           </button>
         )}

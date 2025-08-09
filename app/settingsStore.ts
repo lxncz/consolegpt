@@ -9,7 +9,7 @@ const createSettingsStore = () => {
   const store = storage<SettingsStore>("settings");
 
   const atom = createAtom<SettingsStore>({
-    model: 'gpt-4o',
+    model: "gpt-4o",
     ...store.get(),
   });
 
