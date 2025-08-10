@@ -21,13 +21,7 @@ const Main = () => {
         <Header onNewChatRequest={handleOnNewChatRequest} />
         <MemoMessage
           id={"#0000"}
-          initialContent={[
-            {
-              role: "developer",
-              content:
-                "Format rules: Use ```lang notation if you need to display code",
-            },
-          ]}
+          initialContent={[]}
           containerRef={mainViewRef}
           deselectMsgRef={deselectMsgRef}
         />

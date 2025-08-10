@@ -18,9 +18,23 @@ import { settingsStore } from "./settingsStore";
 
 import { storage } from "./utils";
 
+type UserMessage = {
+  role: "user";
+  content: (
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+  )[];
+};
+
+type AssistantMessage = {
+  role: "assistant";
+  content: string;
+};
+
 type MsgStore = {
   weight?: number;
   content?: string;
+  images?: string;
   messages?: string[];
   select?: string | null;
   meta?: { model?: string; error?: string };
@@ -30,10 +44,7 @@ type MsgStore = {
 
 type MessageProps = {
   id: string;
-  initialContent: {
-    role: "user" | "assistant" | "developer";
-    content: string;
-  }[];
+  initialContent: (UserMessage | AssistantMessage)[];
   containerRef: RefObject<HTMLElement | null>;
   onWeightChange?: () => void;
   deselectMsgRef?: RefObject<(() => void) | undefined>;
@@ -51,9 +62,7 @@ const newMessageCompletion = ({
   const { apiKey, model } = settingsStore.get();
 
   const msgStore = storage<MsgStore>(msgId);
-
   const msg = { ...msgStore.get(), meta: { model } };
-
   msgStore.set(msg);
 
   return completionTaskStore.newTask({
@@ -114,19 +123,33 @@ const Message = ({
   const selectedMemoProps = useMemo(() => {
     if (!selectedMsg?.id) return;
 
+    const images = JSON.parse(selectedMsg.images || "[]") as string[];
+
+    const msgTemplate = {
+      user: {
+        role: "user",
+        content: [
+          { type: "text", text: selectedMsg.content || "" },
+          ...(images.map((url) => ({
+            type: "image_url",
+            image_url: { url },
+          })) || []),
+        ],
+      } as UserMessage,
+      assistant: {
+        role: "assistant",
+        content: selectedMsg.content || "",
+      } as AssistantMessage,
+    };
+
     return {
       key: nanoid(5),
       data: {
         id: selectedMsg.id,
-        role: selectedMsg.role,
-        content: selectedMsg.content,
+        content: selectedMsg.content || "",
+        images: images,
       },
-      initialContent: [
-        ...initialContent,
-        ...(selectedMsg.role && selectedMsg.content
-          ? [{ role: selectedMsg.role, content: selectedMsg.content }]
-          : []),
-      ],
+      initialContent: [...initialContent, msgTemplate[selectedMsg.role]],
       onWeightChange: () => refresh(),
     };
   }, [
@@ -134,6 +157,7 @@ const Message = ({
     selectedMsg?.id,
     selectedMsg?.content,
     selectedMsg?.role,
+    selectedMsg?.images,
     refresh,
   ]);
 
@@ -163,11 +187,13 @@ const Message = ({
   });
 
   const newBranch = ({
-    content,
+    content = "",
+    images = [],
     fillContent,
     addAnswer,
   }: {
     content?: string;
+    images?: string[];
     fillContent?: boolean;
     addAnswer?: boolean;
   }) => {
@@ -175,13 +201,14 @@ const Message = ({
 
     const msgId = `#${nanoid(4)}`;
 
-    let msg: MsgStore = {
+    const msg: MsgStore = {
       id: msgId,
       role: selectedMsg?.role || defaultChildRole,
       content,
+      images: JSON.stringify(images),
     };
 
-    if (addAnswer && content && msg.role === "user") {
+    if (addAnswer && msg.role === "user") {
       const childMsgId = `#${nanoid(4)}`;
 
       storage<MsgStore>(childMsgId).set({
@@ -189,15 +216,26 @@ const Message = ({
         role: "assistant",
       });
 
-      msg = {
-        ...msg,
-        messages: [childMsgId],
-        select: childMsgId,
-      };
+      msg.messages = [childMsgId];
+      msg.select = childMsgId;
+
+      const requestMsg = {
+        role: "user",
+        content: [
+          { type: "text", text: content },
+          ...images.map(
+            (url) =>
+              ({
+                type: "image_url",
+                image_url: { url },
+              } as const)
+          ),
+        ],
+      } as UserMessage;
 
       newMessageCompletion({
         msgId: childMsgId,
-        messages: [...initialContent, { role: msg.role, content }],
+        messages: [...initialContent, requestMsg],
       });
     }
 
@@ -216,7 +254,7 @@ const Message = ({
     refresh();
   };
 
-  const editSelect = (content: string) => {
+  const editSelect = (content: string, images?: string[]) => {
     if (!selectedMsg) return;
 
     prevPosRef.current = getCurrentPos();
@@ -224,6 +262,7 @@ const Message = ({
     storage<MsgStore>(selectedMsg.id).set({
       ...selectedMsg,
       content,
+      images: JSON.stringify(images || []),
     });
 
     refresh();
@@ -288,9 +327,11 @@ const Message = ({
   const style = {
     user: {
       previewTextColor: "text-cyan-500",
+      previewTextColorHover: "hover:text-cyan-600",
     },
     assistant: {
       previewTextColor: "text-rose-500",
+      previewTextColorHover: "hover:text-rose-600",
     },
   }[selectedMsg?.role || defaultChildRole];
 
@@ -315,10 +356,10 @@ const Message = ({
                   key={msgData.id}
                 >
                   <span
-                    className={`truncate ${
+                    className={`truncate  ${
                       bold
                         ? `font-bold ${style.previewTextColor}`
-                        : "text-neutral-400"
+                        : `text-neutral-400 ${style.previewTextColorHover}`
                     }`}
                     onClick={() => handleItemClick(msgData.id)}
                   >
@@ -404,17 +445,22 @@ const Message = ({
 
         {isEditing ? (
           <Textarea
-            onSubmit={({ content, action }) => {
+            onSubmit={({ content, images, action }) => {
               switch (action) {
                 case "send":
-                  newBranch({ content, addAnswer: true });
+                  newBranch({
+                    content,
+                    images,
+                    addAnswer: true,
+                  });
                   break;
                 case "save":
-                  editSelect(content);
+                  editSelect(content, images);
                   break;
               }
             }}
-            defaultValue={selectedMemoProps?.data.content}
+            defaultValue={selectedMemoProps?.data.content || ""}
+            defaultImages={selectedMemoProps?.data.images || []}
             key={selectedMemoProps?.key}
           />
         ) : (

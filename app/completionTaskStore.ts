@@ -2,11 +2,21 @@ import { createAtom } from "./utils";
 
 import OpenAI from "openai";
 
+type UserMessage = {
+  role: "user";
+  content: (
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+  )[];
+};
+
+type AssistantMessage = {
+  role: "assistant";
+  content: string;
+};
+
 type ChatCompletionOptions = {
-  messages?: Array<{
-    role: "user" | "assistant" | "developer";
-    content: string;
-  }>;
+  messages?: (UserMessage | AssistantMessage)[];
   model?: string;
 };
 
@@ -36,7 +46,7 @@ const chatCompletion: ChatCompletion = async ({
     openai.chat.completions
       .create(
         {
-          model: opts.model || "gpt-4o",
+          model: opts.model || "gpt-4.1",
           messages: opts.messages || [],
           stream: true,
         },

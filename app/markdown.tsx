@@ -44,6 +44,13 @@ const Markdown = ({ text }: MarkdownProps) => (
           </code>
         );
       },
+      table({ children, ...props }) {
+        return (
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table {...props}>{children}</table>
+          </div>
+        );
+      },
     }}
   >
     {text || ""}

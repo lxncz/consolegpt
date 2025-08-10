@@ -41,7 +41,7 @@ const Header = ({ onNewChatRequest }: HeaderProps) => {
           "linear-gradient(90deg, rgb(255 255 255 / 10%), rgb(255 255 255 / 5%))",
         backdropFilter: "blur(10px)",
       }}
-      className="flex p-2 w-full sticky top-0 gap-2 text-sm bg-neutral-900 rounded-b-lg"
+      className="z-10 flex p-2 w-full sticky top-0 gap-2 text-sm bg-neutral-900 rounded-b-lg"
     >
       <button
         className="font-bold text-white hover:text-neutral-300 px-2"
@@ -73,21 +73,21 @@ const Header = ({ onNewChatRequest }: HeaderProps) => {
       {activeTasks.length > 0 && (
         <label className="ml-auto text-white flex justify-center items-center gap-1">
           {activeTasks.length}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <path d="M13 8H7" />
-            <path d="M17 12H7" />
-          </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-spin"
+            >
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" />
+            </svg>
         </label>
       )}
     </header>
